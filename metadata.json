@@ -1,0 +1,6 @@
+{
+  "name": "TutorSlot",
+  "description": "Student tutoring slot booking and weekly schedule planner.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

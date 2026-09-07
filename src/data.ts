@@ -1,0 +1,268 @@
+import { Tutor, WeeklyScheduleItem } from './types';
+
+/**
+ * Single source of truth for all invented mock data in TutorSlot.
+ * All names, courses, locations, dates, and times are purely fictional.
+ */
+
+export const DAYS_OF_WEEK: Array<'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday'> = [
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+];
+
+export const CURRENT_WEEK_DATES: Record<string, string> = {
+  Monday: 'Mon, Sep 7',
+  Tuesday: 'Tue, Sep 8',
+  Wednesday: 'Wed, Sep 9',
+  Thursday: 'Thu, Sep 10',
+  Friday: 'Fri, Sep 11',
+};
+
+export const INITIAL_TUTORS: Tutor[] = [
+  {
+    id: 'tutor-1',
+    name: 'Dr. Aris Thorne',
+    subject: 'Microeconomic Theory & Game Design',
+    description: 'Specializes in mathematical modeling of competitive decision-making, consumer equilibrium, and oligopoly payoff matrices.',
+    rating: 4.9,
+    reviewCount: 38,
+    avatarInitials: 'AT',
+    avatarColor: 'bg-amber-700 text-amber-50',
+    slots: [
+      {
+        id: 'slot-101',
+        tutorId: 'tutor-1',
+        day: 'Monday',
+        dateStr: 'Mon, Sep 7',
+        time: '09:30 AM – 10:30 AM',
+        room: 'Study Suite 302',
+        isBooked: false,
+      },
+      {
+        id: 'slot-102',
+        tutorId: 'tutor-1',
+        day: 'Wednesday',
+        dateStr: 'Wed, Sep 9',
+        time: '02:00 PM – 03:00 PM',
+        room: 'Academic Pavilion B',
+        isBooked: false,
+      },
+      {
+        id: 'slot-103',
+        tutorId: 'tutor-1',
+        day: 'Friday',
+        dateStr: 'Fri, Sep 11',
+        time: '11:00 AM – 12:00 PM',
+        room: 'Study Suite 302',
+        isBooked: false,
+      },
+    ],
+  },
+  {
+    id: 'tutor-2',
+    name: 'Nadia Chen-Vazquez',
+    subject: 'Organic Reaction Pathways & Synthesis',
+    description: 'Assisting students through carbonyl additions, chiral stereochemistry, and multi-step retro-synthetic laboratory strategies.',
+    rating: 4.8,
+    reviewCount: 42,
+    avatarInitials: 'NC',
+    avatarColor: 'bg-emerald-700 text-emerald-50',
+    slots: [
+      {
+        id: 'slot-201',
+        tutorId: 'tutor-2',
+        day: 'Monday',
+        dateStr: 'Mon, Sep 7',
+        time: '01:30 PM – 02:30 PM',
+        room: 'Science Hall 118',
+        isBooked: false,
+      },
+      {
+        id: 'slot-202',
+        tutorId: 'tutor-2',
+        day: 'Tuesday',
+        dateStr: 'Tue, Sep 8',
+        time: '10:00 AM – 11:00 AM',
+        room: 'Science Hall 118',
+        isBooked: false,
+      },
+      {
+        id: 'slot-203',
+        tutorId: 'tutor-2',
+        day: 'Thursday',
+        dateStr: 'Thu, Sep 10',
+        time: '03:30 PM – 04:30 PM',
+        room: 'Chemistry Hub 2A',
+        isBooked: false,
+      },
+    ],
+  },
+  {
+    id: 'tutor-3',
+    name: 'Devon K. Mercer',
+    subject: 'Vector Calculus & Differential Systems',
+    description: 'Patient approach covering Stokes theorem, double integration, vector fields, and linear boundary value problems.',
+    rating: 5.0,
+    reviewCount: 51,
+    avatarInitials: 'DM',
+    avatarColor: 'bg-blue-700 text-blue-50',
+    slots: [
+      {
+        id: 'slot-301',
+        tutorId: 'tutor-3',
+        day: 'Tuesday',
+        dateStr: 'Tue, Sep 8',
+        time: '01:00 PM – 02:00 PM',
+        room: 'Math Learning Bay 4',
+        isBooked: false,
+      },
+      {
+        id: 'slot-302',
+        tutorId: 'tutor-3',
+        day: 'Thursday',
+        dateStr: 'Thu, Sep 10',
+        time: '11:00 AM – 12:00 PM',
+        room: 'Math Learning Bay 4',
+        isBooked: false,
+      },
+    ],
+  },
+  {
+    id: 'tutor-4',
+    name: 'Soren Lindqvist',
+    subject: 'Data Structures & Algorithmic Complexity',
+    description: 'Demystifying asymptotic Big-O bounds, graph traversals (BFS/DFS), dynamic programming tables, and heap indexing.',
+    rating: 4.9,
+    reviewCount: 64,
+    avatarInitials: 'SL',
+    avatarColor: 'bg-indigo-700 text-indigo-50',
+    slots: [
+      {
+        id: 'slot-401',
+        tutorId: 'tutor-4',
+        day: 'Monday',
+        dateStr: 'Mon, Sep 7',
+        time: '04:00 PM – 05:00 PM',
+        room: 'Computing Lab 405',
+        isBooked: false,
+      },
+      {
+        id: 'slot-402',
+        tutorId: 'tutor-4',
+        day: 'Wednesday',
+        dateStr: 'Wed, Sep 9',
+        time: '10:30 AM – 11:30 AM',
+        room: 'Computing Lab 405',
+        isBooked: false,
+      },
+      {
+        id: 'slot-403',
+        tutorId: 'tutor-4',
+        day: 'Friday',
+        dateStr: 'Fri, Sep 11',
+        time: '02:30 PM – 03:30 PM',
+        room: 'Computing Lab 405',
+        isBooked: false,
+      },
+    ],
+  },
+  {
+    id: 'tutor-5',
+    name: 'Helena Rostova',
+    subject: 'Critical Writing & Scholarly Arguments',
+    description: 'Editorial coaching on thesis refinement, structural paragraph transitions, textual counterarguments, and citation precision.',
+    rating: 4.8,
+    reviewCount: 29,
+    avatarInitials: 'HR',
+    avatarColor: 'bg-rose-700 text-rose-50',
+    slots: [
+      {
+        id: 'slot-501',
+        tutorId: 'tutor-5',
+        day: 'Tuesday',
+        dateStr: 'Tue, Sep 8',
+        time: '03:00 PM – 04:00 PM',
+        room: 'Humanities Lounge 204',
+        isBooked: false,
+      },
+      {
+        id: 'slot-502',
+        tutorId: 'tutor-5',
+        day: 'Thursday',
+        dateStr: 'Thu, Sep 10',
+        time: '09:00 AM – 10:00 AM',
+        room: 'Humanities Lounge 204',
+        isBooked: false,
+      },
+    ],
+  },
+  {
+    id: 'tutor-6',
+    name: 'Tariq Al-Sabah',
+    subject: 'Corporate Financial Statement Modeling',
+    description: 'Hands-on breakdown of discounted cash flows (DCF), debt amortization schedules, working capital cycles, and ratios.',
+    rating: 4.9,
+    reviewCount: 47,
+    avatarInitials: 'TA',
+    avatarColor: 'bg-teal-700 text-teal-50',
+    slots: [
+      {
+        id: 'slot-601',
+        tutorId: 'tutor-6',
+        day: 'Wednesday',
+        dateStr: 'Wed, Sep 9',
+        time: '04:30 PM – 05:30 PM',
+        room: 'Finance Commons 108',
+        isBooked: false,
+      },
+      {
+        id: 'slot-602',
+        tutorId: 'tutor-6',
+        day: 'Friday',
+        dateStr: 'Fri, Sep 11',
+        time: '09:00 AM – 10:00 AM',
+        room: 'Finance Commons 108',
+        isBooked: false,
+      },
+    ],
+  },
+  {
+    id: 'tutor-7',
+    name: 'Kavita Sundaram',
+    subject: 'Experimental Psychology & Hypothesis Testing',
+    description: 'Guiding undergraduates through ANOVA variance partitions, statistical regression interpretations, and survey validity checks.',
+    rating: 4.7,
+    reviewCount: 33,
+    avatarInitials: 'KS',
+    avatarColor: 'bg-violet-700 text-violet-50',
+    slots: [
+      {
+        id: 'slot-701',
+        tutorId: 'tutor-7',
+        day: 'Tuesday',
+        dateStr: 'Tue, Sep 8',
+        time: '11:30 AM – 12:30 PM',
+        room: 'Behavioral Lab 309',
+        isBooked: false,
+      },
+      {
+        id: 'slot-702',
+        tutorId: 'tutor-7',
+        day: 'Thursday',
+        dateStr: 'Thu, Sep 10',
+        time: '01:30 PM – 02:30 PM',
+        room: 'Behavioral Lab 309',
+        isBooked: false,
+      },
+    ],
+  },
+];
+
+/**
+ * Initial student weekly tutoring schedule (empty until slots are booked).
+ * Only booked tutoring sessions appear in My Week.
+ */
+export const INITIAL_STUDENT_SCHEDULE: WeeklyScheduleItem[] = [];
