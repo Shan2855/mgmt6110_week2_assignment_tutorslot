@@ -1,3 +1,4 @@
+**Name:** Shantanu Sawant
 # TutorSlot — Prompt Log
 
 ## Prompt 1 — Initial Product Build
