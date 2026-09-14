@@ -139,7 +139,13 @@ The live TutorSlot page displayed the current City forecast and the required Sin
 No API key, credential, database, or login was used because the selected government weather service is public. The browser calls TutorSlot’s /api/weather route; the serverless function makes the external provider request.
 
 
-
-
-
 I checked the overall booking window and the individual tutoring slots and confirmed that the dates were consistent with the current week. No further change was needed for this requirement.
+
+Manual Review and Correction
+
+One correction did not work as reported. AI Studio stated that the weather route had been fixed, but I checked the actual file rather than accepting the summary. I found that the provider URL and formatting still needed verification.
+
+At that point, I stopped relying on the agent’s completion message alone. I manually reviewed and replaced the relevant route code in the AI Studio Code tab, then checked the live Vercel endpoints after deployment.
+
+
+The live /api/health response confirmed status: "ok", providerAnswered: true, and upstreamStatus: 200; /api/weather returned the live City forecast.
