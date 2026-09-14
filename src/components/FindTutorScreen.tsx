@@ -46,9 +46,7 @@ export const FindTutorScreen: React.FC<FindTutorScreenProps> = ({
   });
 
   // Calculate stats for confidence
-  const totalSlots = tutors.flatMap((t) => t.slots).length;
   const bookedSlotsCount = tutors.flatMap((t) => t.slots).filter((s) => s.isBooked).length;
-  const availableSlotsCount = totalSlots - bookedSlotsCount;
 
   return (
     <div className="space-y-6">
@@ -66,13 +64,6 @@ export const FindTutorScreen: React.FC<FindTutorScreenProps> = ({
             <p className="text-base text-slate-600 mt-1 leading-relaxed">
               Select an open tutoring slot below to book your 1-on-1 academic session.
             </p>
-          </div>
-
-          <div className="flex items-center gap-2 self-start sm:self-auto bg-slate-50 border border-slate-200 px-3.5 py-2 rounded-xl text-sm font-medium text-slate-700">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span>
-              <strong>{availableSlotsCount}</strong> open slots available
-            </span>
           </div>
         </div>
 

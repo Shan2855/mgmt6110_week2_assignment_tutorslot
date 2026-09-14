@@ -1,11 +1,59 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
-import {defineConfig} from 'vite';
+import {defineConfig, Plugin} from 'vite';
+import weatherHandler from './api/weather.js';
+import healthHandler from './api/health.js';
+
+function apiRoutesPlugin(): Plugin {
+  return {
+    name: 'api-routes',
+    configureServer(server) {
+      server.middlewares.use(async (req, res, next) => {
+        const url = req.url ? new URL(req.url, 'http://localhost').pathname : '';
+        if (url === '/api/weather') {
+          try {
+            await weatherHandler(req, res);
+          } catch {
+            res.statusCode = 500;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({ error: 'Live weather is temporarily unavailable. Please try again shortly.' }));
+          }
+          return;
+        }
+        if (url === '/api/health') {
+          try {
+            await healthHandler(req, res);
+          } catch {
+            res.statusCode = 500;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({ status: 'error' }));
+          }
+          return;
+        }
+        next();
+      });
+    },
+    configurePreviewServer(server) {
+      server.middlewares.use(async (req, res, next) => {
+        const url = req.url ? new URL(req.url, 'http://localhost').pathname : '';
+        if (url === '/api/weather') {
+          await weatherHandler(req, res);
+          return;
+        }
+        if (url === '/api/health') {
+          await healthHandler(req, res);
+          return;
+        }
+        next();
+      });
+    },
+  };
+}
 
 export default defineConfig(() => {
   return {
-    plugins: [react(), tailwindcss()],
+    plugins: [react(), tailwindcss(), apiRoutesPlugin()],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),

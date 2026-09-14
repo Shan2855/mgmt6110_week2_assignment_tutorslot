@@ -5,6 +5,7 @@ import { Header } from './components/Header';
 import { FindTutorScreen } from './components/FindTutorScreen';
 import { MyWeekScreen } from './components/MyWeekScreen';
 import { BookingConfirmationModal } from './components/BookingConfirmationModal';
+import { CityWeatherWidget } from './components/CityWeatherWidget';
 
 export default function App() {
   const [activeScreen, setActiveScreen] = useState<ActiveScreen>('find');
@@ -125,7 +126,10 @@ export default function App() {
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-6">
+      <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-6 space-y-6">
+        {/* Live Weather for SMU In-Person Sessions */}
+        <CityWeatherWidget />
+
         {activeScreen === 'find' ? (
           <FindTutorScreen
             tutors={tutors}
@@ -150,6 +154,13 @@ export default function App() {
         onClose={() => setModalState({ isOpen: false, tutor: null, slot: null })}
         onGoToMyWeek={handleGoToMyWeek}
       />
+
+      {/* Global Application Footer with Open Data Licence Attribution */}
+      <footer className="max-w-4xl w-full mx-auto px-4 mt-8 pt-4 border-t border-slate-200/60 text-center text-xs text-slate-500 leading-relaxed">
+        <p>
+          Contains information from the National Environment Agency, Singapore, which is made available under the terms of the Singapore Open Data Licence version 1.0.
+        </p>
+      </footer>
     </div>
   );
 }
