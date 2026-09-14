@@ -72,4 +72,74 @@ AI Studio successfully updated the booking window to September 7–11, 2026. The
 
 **What changed next and why:**
 
+Problem Set 2 — Week 3: Live Data and Backend
+
+Claim Audit and Decision
+
+TutorSlot previously showed “17 open slots available” as a hard-coded number. This was not supported by a real tutor calendar or booking database, so I decided not to present it as live. I removed the unsupported claim.
+
+Instead, I added one clearly useful, truthful live-data feature: the short-term City weather forecast for students travelling to an in-person tutoring session at SMU. The source is Singapore’s official two-hour weather forecast service at data.gov.sg. I first opened the endpoint by hand and confirmed that the response contains data.items[0].forecasts, including an entry with area: "City" and a forecast value.
+
+Prompt 5 — Add Live City Weather
+
+Prompt sent:
+
+Extend the existing TutorSlot project without redesigning or removing the current booking interface. Add a live-weather section for students planning an in-person tutoring session at SMU. Create a Vercel backend route at /api/weather; the browser must call only this route, not the Singapore provider directly. Fetch the official Singapore two-hour weather forecast, extract only the City forecast, valid time period, and update time, and show loading, empty-result, provider-error, and network-error messages. Cache the result because the provider has a shared rate limit. Also create /api/health.
+
+What came back:
+
+AI Studio added a City-weather card and created initial weather and health routes. The card showed the forecast and the valid time period while preserving TutorSlot’s tutor listings, booking flow, filters, and My Week screen.
+
+What I did with it:
+
+I did not rely only on AI Studio’s completion message. I inspected the new files and found that the first version used TypeScript route files and that the health route reported “ok” even when it had not verified the upstream provider. I used the professor’s backend checklist to identify these problems before deployment.
+
+Prompt 6 — Correct and Harden the Backend
+
+Prompt sent:
+
+Correct the Week 3 backend without redesigning TutorSlot. Use api/weather.js and api/health.js at the project root beside package.json, not inside src. Remove the unsupported “17 open slots available” badge. The weather route must fetch the official Singapore two-hour forecast only from the server, check response.ok before parsing, return only City, forecast, valid period, and update timestamp, and cache successful replies with Cache-Control: s-maxage=1800, stale-while-revalidate=3600.
+
+The health route must report keyConfigured: "not-required" because the chosen public weather source needs no credential. It must also state whether the provider answered and include the upstream HTTP status. The screen must use four distinct messages for loading, empty City data, provider refusal/rate limit, and provider/network failure. Add the required Singapore Open Data Licence attribution.
+
+What came back:
+
+AI Studio moved the backend functions to root-level JavaScript files, removed the unsupported availability badge, added source attribution, and added the four user-facing states.
+
+What I did with it:
+
+I checked the actual code rather than accepting the summary. I verified that api/weather.js and api/health.js were beside package.json. I also checked that the weather route used the correct official endpoint, checked response.ok, returned only the required fields, and set the specified cache header.
+
+Prompt 7 — Make Health Status Honest
+
+Prompt sent:
+
+Correct api/health.js so that it returns status: "ok" only when the provider answers with a 2xx status, status: "degraded" for a non-2xx upstream reply, and status: "unavailable" when the provider cannot be reached. Return upstreamStatus: "unreachable" rather than null when there is no provider response. Return HTTP 200 only for a healthy provider and HTTP 503 otherwise. Do not expose internal error details.
+
+What came back:
+
+AI Studio updated the health route to distinguish healthy, degraded, and unavailable states while keeping the public-service value keyConfigured: "not-required".
+
+What I did with it:
+
+I inspected the updated route in the Code tab. I confirmed that it reported the provider’s HTTP status, used unreachable when there was no answer, and returned HTTP 503 when the upstream service was not healthy.
+
+Deployment and Verification
+
+I pushed the completed update to the existing TutorSlot GitHub repository and verified that the root-level api folder appeared in the public repository. Vercel deployed the update successfully.
+
+I then tested the live backend before relying on the screen:
+
+/api/health returned status: "ok", keyConfigured: "not-required", providerAnswered: true, and upstreamStatus: 200.
+
+/api/weather returned only the live City forecast fields: area, forecast, valid period, and update time.
+
+The live TutorSlot page displayed the current City forecast and the required Singapore Open Data Licence attribution.
+
+No API key, credential, database, or login was used because the selected government weather service is public. The browser calls TutorSlot’s /api/weather route; the serverless function makes the external provider request.
+
+
+
+
+
 I checked the overall booking window and the individual tutoring slots and confirmed that the dates were consistent with the current week. No further change was needed for this requirement.
