@@ -65,6 +65,21 @@ export const BookingConfirmationModal: React.FC<BookingConfirmationModalProps> =
             <div className="text-sm text-indigo-700 font-medium mt-0.5">
               {tutor.subject}
             </div>
+            {/* Level and Major Tag */}
+            <div className="flex items-center gap-2 mt-2">
+              <span
+                className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-extrabold uppercase ${
+                  tutor.level === 'UG'
+                    ? 'bg-sky-100 text-sky-800 border border-sky-300'
+                    : 'bg-purple-100 text-purple-800 border border-purple-300'
+                }`}
+              >
+                Level: {tutor.level}
+              </span>
+              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-amber-50 text-amber-900 border border-amber-200">
+                Major: {tutor.major}
+              </span>
+            </div>
 
             <div className="mt-4 pt-3 border-t border-slate-200 grid grid-cols-1 gap-2.5">
               <div className="flex items-center gap-2 text-sm text-slate-700 font-medium">

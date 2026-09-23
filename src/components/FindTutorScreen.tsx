@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Tutor, TutoringSlot, DayOfWeek } from '../types';
+import { Tutor, TutoringSlot, DayOfWeek, StudyLevel } from '../types';
 import { DAYS_OF_WEEK } from '../data';
 import {
   Calendar,
@@ -12,6 +12,8 @@ import {
   Filter,
   XCircle,
   Sparkles,
+  MessageSquare,
+  GraduationCap,
 } from 'lucide-react';
 
 interface FindTutorScreenProps {
@@ -19,6 +21,8 @@ interface FindTutorScreenProps {
   onBookSlot: (tutor: Tutor, slot: TutoringSlot) => void;
   onCancelSlot: (slotId: string) => void;
   onGoToMyWeek: () => void;
+  onOpenChat: (tutor: Tutor) => void;
+  onViewProfessorProfile: (tutor: Tutor) => void;
 }
 
 export const FindTutorScreen: React.FC<FindTutorScreenProps> = ({
@@ -26,16 +30,27 @@ export const FindTutorScreen: React.FC<FindTutorScreenProps> = ({
   onBookSlot,
   onCancelSlot,
   onGoToMyWeek,
+  onOpenChat,
+  onViewProfessorProfile,
 }) => {
   const [selectedDayFilter, setSelectedDayFilter] = useState<string>('All');
   const [selectedSubjectFilter, setSelectedSubjectFilter] = useState<string>('All');
+  const [selectedLevelFilter, setSelectedLevelFilter] = useState<string>('All');
+  const [selectedMajorFilter, setSelectedMajorFilter] = useState<string>('All');
 
-  // Extract unique subjects for easy phone filtering
+  // Extract unique subjects & majors for phone filtering
   const allSubjects = ['All', ...Array.from(new Set(tutors.map((t) => t.subject.split(' & ')[0])))];
+  const allMajors = ['All', ...Array.from(new Set(tutors.map((t) => t.major)))];
 
   // Filter tutors based on selected filters
   const filteredTutors = tutors.filter((tutor) => {
     if (selectedSubjectFilter !== 'All' && !tutor.subject.includes(selectedSubjectFilter)) {
+      return false;
+    }
+    if (selectedLevelFilter !== 'All' && tutor.level !== selectedLevelFilter) {
+      return false;
+    }
+    if (selectedMajorFilter !== 'All' && tutor.major !== selectedMajorFilter) {
       return false;
     }
     if (selectedDayFilter !== 'All') {
@@ -45,7 +60,7 @@ export const FindTutorScreen: React.FC<FindTutorScreenProps> = ({
     return true;
   });
 
-  // Calculate stats for confidence
+  // Calculate stats
   const bookedSlotsCount = tutors.flatMap((t) => t.slots).filter((s) => s.isBooked).length;
 
   return (
@@ -56,13 +71,13 @@ export const FindTutorScreen: React.FC<FindTutorScreenProps> = ({
           <div>
             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 mb-2">
               <CalendarCheck className="w-3.5 h-3.5" />
-              <span>Current Week Booking Window</span>
+              <span>Current Week Booking Window (Sep 7 – Sep 11, 2026)</span>
             </span>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
               Find a Tutor
             </h2>
             <p className="text-base text-slate-600 mt-1 leading-relaxed">
-              Select an open tutoring slot below to book your 1-on-1 academic session.
+              Select an open tutoring slot below to book your 1-on-1 academic session. Check whether each course belongs to <strong>UG</strong> or <strong>PG</strong>, review the academic <strong>Major</strong>, and contact professors via chat anytime.
             </p>
           </div>
         </div>
@@ -80,17 +95,18 @@ export const FindTutorScreen: React.FC<FindTutorScreenProps> = ({
                 onClick={() => setSelectedDayFilter('All')}
                 className="text-xs text-indigo-600 hover:text-indigo-800 font-semibold cursor-pointer"
               >
-                Clear filter
+                Clear Day
               </button>
             )}
           </div>
-          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
             <button
               type="button"
               onClick={() => setSelectedDayFilter('All')}
-              className={`px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap min-h-[44px] transition-colors cursor-pointer ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-colors cursor-pointer min-h-[36px] ${
                 selectedDayFilter === 'All'
-                  ? 'bg-slate-900 text-white shadow-xs'
+                  ? 'bg-indigo-600 text-white shadow-2xs'
                   : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
               }`}
             >
@@ -101,15 +117,85 @@ export const FindTutorScreen: React.FC<FindTutorScreenProps> = ({
                 key={day}
                 type="button"
                 onClick={() => setSelectedDayFilter(day)}
-                className={`px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap min-h-[44px] transition-colors cursor-pointer ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-colors cursor-pointer min-h-[36px] ${
                   selectedDayFilter === day
-                    ? 'bg-slate-900 text-white shadow-xs'
+                    ? 'bg-indigo-600 text-white shadow-2xs'
                     : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                 }`}
               >
                 {day}
               </button>
             ))}
+          </div>
+        </div>
+
+        {/* Academic Level & Major Filters */}
+        <div className="mt-3 pt-3 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {/* Level Filter */}
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
+              Study Level (UG / PG):
+            </label>
+            <div className="flex items-center gap-1.5">
+              {(['All', 'UG', 'PG'] as const).map((lvl) => (
+                <button
+                  key={lvl}
+                  type="button"
+                  onClick={() => setSelectedLevelFilter(lvl)}
+                  className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer min-h-[36px] ${
+                    selectedLevelFilter === lvl
+                      ? 'bg-indigo-600 text-white shadow-2xs'
+                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                  }`}
+                >
+                  {lvl === 'All' ? 'All Levels' : lvl}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Major Filter */}
+          <div>
+            <label
+              htmlFor="major-select-filter"
+              className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1"
+            >
+              Academic Major:
+            </label>
+            <select
+              id="major-select-filter"
+              value={selectedMajorFilter}
+              onChange={(e) => setSelectedMajorFilter(e.target.value)}
+              className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 min-h-[36px] cursor-pointer"
+            >
+              {allMajors.map((maj) => (
+                <option key={maj} value={maj}>
+                  {maj === 'All' ? 'All Majors' : maj}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Subject Filter Dropdown */}
+          <div>
+            <label
+              htmlFor="subject-select-filter"
+              className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1"
+            >
+              Subject Focus:
+            </label>
+            <select
+              id="subject-select-filter"
+              value={selectedSubjectFilter}
+              onChange={(e) => setSelectedSubjectFilter(e.target.value)}
+              className="w-full px-3 py-1.5 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 min-h-[36px] cursor-pointer"
+            >
+              {allSubjects.map((subj) => (
+                <option key={subj} value={subj}>
+                  {subj === 'All' ? 'All Subjects' : subj}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
       </div>
@@ -154,6 +240,8 @@ export const FindTutorScreen: React.FC<FindTutorScreenProps> = ({
               onClick={() => {
                 setSelectedDayFilter('All');
                 setSelectedSubjectFilter('All');
+                setSelectedLevelFilter('All');
+                setSelectedMajorFilter('All');
               }}
               className="mt-3 px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-xl cursor-pointer min-h-[44px]"
             >
@@ -162,11 +250,10 @@ export const FindTutorScreen: React.FC<FindTutorScreenProps> = ({
           </div>
         ) : (
           filteredTutors.map((tutor) => {
-            // Check if any slot is booked for this tutor
             const tutorHasBookedSlot = tutor.slots.some((s) => s.isBooked);
 
             return (
-              <section
+              <article
                 key={tutor.id}
                 id={`tutor-card-${tutor.id}`}
                 className={`bg-white rounded-2xl border transition-all duration-200 overflow-hidden shadow-xs ${
@@ -188,9 +275,27 @@ export const FindTutorScreen: React.FC<FindTutorScreenProps> = ({
 
                     <div className="flex-1 min-w-0">
                       <div className="flex flex-wrap items-center justify-between gap-2">
-                        <h3 className="text-lg sm:text-xl font-bold text-slate-900 truncate">
-                          {tutor.name}
-                        </h3>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h3 className="text-lg sm:text-xl font-bold text-slate-900 truncate">
+                            {tutor.name}
+                          </h3>
+
+                          {/* Study Level Badge (UG / PG) */}
+                          <span
+                            className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-extrabold uppercase tracking-wide ${
+                              tutor.level === 'UG'
+                                ? 'bg-sky-100 text-sky-800 border border-sky-300'
+                                : 'bg-purple-100 text-purple-800 border border-purple-300'
+                            }`}
+                          >
+                            Level: {tutor.level}
+                          </span>
+
+                          {/* Major Badge */}
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-bold bg-amber-50 text-amber-900 border border-amber-200">
+                            Major: {tutor.major}
+                          </span>
+                        </div>
 
                         {/* Rating */}
                         <div className="flex items-center gap-1 bg-amber-50 border border-amber-200/80 px-2.5 py-1 rounded-lg text-xs font-bold text-amber-800">
@@ -211,6 +316,29 @@ export const FindTutorScreen: React.FC<FindTutorScreenProps> = ({
                       <p className="text-sm text-slate-600 mt-2 leading-relaxed">
                         {tutor.description}
                       </p>
+
+                      {/* Professor Quick Actions: View Full Profile & Chat Request */}
+                      <div className="mt-3 flex items-center gap-2 flex-wrap">
+                        <button
+                          type="button"
+                          onClick={() => onOpenChat(tutor)}
+                          className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-lg transition-colors cursor-pointer min-h-[34px]"
+                          title="Have a query about slot booking or this subject? Send a chat request to this professor"
+                        >
+                          <MessageSquare className="w-3.5 h-3.5" />
+                          <span>Chat Request</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => onViewProfessorProfile(tutor)}
+                          className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200 rounded-lg transition-colors cursor-pointer min-h-[34px]"
+                          title="Read full background, degrees, publications, and teaching experience"
+                        >
+                          <GraduationCap className="w-3.5 h-3.5" />
+                          <span>Professor Background & Publications</span>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -269,6 +397,16 @@ export const FindTutorScreen: React.FC<FindTutorScreenProps> = ({
                               </span>
                             </div>
 
+                            {/* Level and Major Tag on Slot Card */}
+                            <div className="flex items-center gap-1 mb-1.5 flex-wrap">
+                              <span className="text-[10px] font-extrabold px-1.5 py-0.2 rounded bg-slate-100 text-slate-700 border border-slate-200">
+                                {tutor.level}
+                              </span>
+                              <span className="text-[10px] font-semibold px-1.5 py-0.2 rounded bg-amber-50 text-amber-900 border border-amber-200">
+                                {tutor.major}
+                              </span>
+                            </div>
+
                             {/* Slot Date & Time */}
                             <div className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
                               <Calendar className="w-3.5 h-3.5 text-slate-500 shrink-0" />
@@ -280,7 +418,7 @@ export const FindTutorScreen: React.FC<FindTutorScreenProps> = ({
                             </div>
 
                             <div className="text-xs text-slate-500 flex items-center gap-1 mt-1">
-                              <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
+                              <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                               <span className="truncate">{slot.room}</span>
                             </div>
                           </div>
@@ -298,15 +436,15 @@ export const FindTutorScreen: React.FC<FindTutorScreenProps> = ({
                                   onClick={() => onCancelSlot(slot.id)}
                                   className="w-full text-center text-xs text-slate-500 hover:text-rose-600 hover:underline font-medium py-1 cursor-pointer min-h-[36px] flex items-center justify-center"
                                 >
-                                  Cancel this booking
+                                  Cancel reservation
                                 </button>
                               </div>
                             ) : (
                               <button
-                                id={`book-slot-btn-${slot.id}`}
                                 type="button"
+                                id={`book-slot-btn-${slot.id}`}
                                 onClick={() => onBookSlot(tutor, slot)}
-                                className="w-full py-2.5 px-3 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white rounded-lg text-sm font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer min-h-[44px] shadow-xs"
+                                className="w-full py-2 px-3 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white rounded-lg text-xs font-bold transition-colors cursor-pointer min-h-[38px] flex items-center justify-center gap-1 shadow-2xs"
                               >
                                 <span>Book This Slot</span>
                               </button>
@@ -317,7 +455,7 @@ export const FindTutorScreen: React.FC<FindTutorScreenProps> = ({
                     })}
                   </div>
                 </div>
-              </section>
+              </article>
             );
           })
         )}

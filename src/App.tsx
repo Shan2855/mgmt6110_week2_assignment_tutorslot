@@ -1,18 +1,37 @@
 import React, { useState } from 'react';
-import { ActiveScreen, Tutor, TutoringSlot, WeeklyScheduleItem } from './types';
+import { ActiveScreen, Tutor, TutoringSlot, WeeklyScheduleItem, ChatRequest } from './types';
 import { INITIAL_TUTORS, INITIAL_STUDENT_SCHEDULE } from './data';
 import { Header } from './components/Header';
 import { FindTutorScreen } from './components/FindTutorScreen';
 import { MyWeekScreen } from './components/MyWeekScreen';
+import { ProfessorsScreen } from './components/ProfessorsScreen';
 import { BookingConfirmationModal } from './components/BookingConfirmationModal';
+import { HowToUseModal } from './components/HowToUseModal';
+import { ChatRequestModal } from './components/ChatRequestModal';
+import { PaymentModal } from './components/PaymentModal';
 import { CityWeatherWidget } from './components/CityWeatherWidget';
 
 export default function App() {
   const [activeScreen, setActiveScreen] = useState<ActiveScreen>('find');
   const [tutors, setTutors] = useState<Tutor[]>(INITIAL_TUTORS);
   const [schedule, setSchedule] = useState<WeeklyScheduleItem[]>(INITIAL_STUDENT_SCHEDULE);
+  const [chatRequests, setChatRequests] = useState<ChatRequest[]>([]);
 
-  // Modal confirmation state
+  // Modals state
+  const [isHelpOpen, setIsHelpOpen] = useState<boolean>(false);
+  const [selectedTutorForChat, setSelectedTutorForChat] = useState<Tutor | null>(null);
+
+  // Payment Modal state
+  const [paymentModalState, setPaymentModalState] = useState<{
+    isOpen: boolean;
+    item: WeeklyScheduleItem | null;
+    itemsToPay?: WeeklyScheduleItem[];
+  }>({
+    isOpen: false,
+    item: null,
+  });
+
+  // Booking Confirmation Modal state
   const [modalState, setModalState] = useState<{
     isOpen: boolean;
     tutor: Tutor | null;
@@ -29,7 +48,7 @@ export default function App() {
   /**
    * Book a tutoring slot:
    * 1. Updates the tutor slot to isBooked: true
-   * 2. Adds the new confirmed appointment into the student's My Week schedule
+   * 2. Adds the new confirmed appointment with Level & Major and default rate of S$35 into My Week
    * 3. Displays the confirmation modal
    */
   const handleBookSlot = (tutor: Tutor, slot: TutoringSlot) => {
@@ -44,6 +63,8 @@ export default function App() {
               ? {
                   ...s,
                   isBooked: true,
+                  price: 35,
+                  isPaid: false,
                   bookedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                 }
               : s
@@ -52,7 +73,7 @@ export default function App() {
       })
     );
 
-    // 2. Add to weekly schedule immediately
+    // 2. Add to weekly schedule immediately (with Level, Major, price: 35, isPaid: false)
     const newScheduleItem: WeeklyScheduleItem = {
       id: `booking-${slot.id}-${Date.now()}`,
       day: slot.day,
@@ -63,11 +84,14 @@ export default function App() {
       location: slot.room,
       tutorName: tutor.name,
       subject: tutor.subject,
+      level: tutor.level,
+      major: tutor.major,
       slotId: slot.id,
+      price: 35,
+      isPaid: false,
     };
 
     setSchedule((prevSchedule) => {
-      // Prevent duplicates just in case
       const filtered = prevSchedule.filter((item) => item.slotId !== slot.id);
       return [...filtered, newScheduleItem];
     });
@@ -76,7 +100,7 @@ export default function App() {
     setModalState({
       isOpen: true,
       tutor,
-      slot: { ...slot, isBooked: true },
+      slot: { ...slot, isBooked: true, price: 35, isPaid: false },
     });
   };
 
@@ -84,25 +108,70 @@ export default function App() {
    * Cancel a booked tutoring session:
    * 1. Restores the tutor slot to available
    * 2. Removes the appointment from My Week schedule
+   * (Paid classes are blocked from cancellation)
    */
   const handleCancelSlot = (slotId: string) => {
-    // 1. Restore tutor slot
+    // Check if slot is already paid - safeguard against cancellation
+    const targetScheduleItem = schedule.find((item) => item.slotId === slotId);
+    if (targetScheduleItem?.isPaid) {
+      alert('Paid tutoring sessions cannot be cancelled or refunded.');
+      return;
+    }
+
     setTutors((prevTutors) =>
       prevTutors.map((t) => ({
         ...t,
         slots: t.slots.map((s) =>
-          s.id === slotId ? { ...s, isBooked: false, bookedAt: undefined } : s
+          s.id === slotId ? { ...s, isBooked: false, bookedAt: undefined, isPaid: false } : s
         ),
       }))
     );
 
-    // 2. Remove from student schedule
     setSchedule((prevSchedule) => prevSchedule.filter((item) => item.slotId !== slotId));
 
-    // Close modal if open for that slot
     if (modalState.slot?.id === slotId) {
       setModalState({ isOpen: false, tutor: null, slot: null });
     }
+  };
+
+  /**
+   * Process payment confirmation for one or multiple classes:
+   * 1. Marks the schedule items as isPaid: true
+   * 2. Locks the tutor slots so they cannot be cancelled
+   */
+  const handleConfirmPayment = (slotIds: string[], paymentMethod: string) => {
+    const paidAtTimestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    // Update schedule items
+    setSchedule((prev) =>
+      prev.map((item) => {
+        if (item.slotId && slotIds.includes(item.slotId)) {
+          return {
+            ...item,
+            isPaid: true,
+            paidAt: paidAtTimestamp,
+            paymentMethod,
+          };
+        }
+        return item;
+      })
+    );
+
+    // Update tutor slots state
+    setTutors((prev) =>
+      prev.map((tutor) => ({
+        ...tutor,
+        slots: tutor.slots.map((slot) => {
+          if (slotIds.includes(slot.id)) {
+            return {
+              ...slot,
+              isPaid: true,
+            };
+          }
+          return slot;
+        }),
+      }))
+    );
   };
 
   const handleGoToMyWeek = () => {
@@ -116,13 +185,47 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleGoToProfessors = () => {
+    setActiveScreen('professors');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Chat request dispatch
+  const handleSendChatRequest = (data: {
+    tutorId: string;
+    tutorName: string;
+    subject: string;
+    studentName: string;
+    studentEmail: string;
+    queryType: 'booking' | 'subject' | 'general';
+    message: string;
+    preferredContact: 'email' | 'portal_chat';
+  }) => {
+    const newChat: ChatRequest = {
+      id: `chat-${Date.now()}`,
+      tutorId: data.tutorId,
+      tutorName: data.tutorName,
+      subject: data.subject,
+      studentName: data.studentName,
+      studentEmail: data.studentEmail,
+      queryType: data.queryType,
+      message: data.message,
+      preferredContact: data.preferredContact,
+      status: 'sent',
+      createdAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    };
+
+    setChatRequests((prev) => [newChat, ...prev]);
+  };
+
   return (
     <div className="min-h-screen bg-slate-100 text-slate-900 flex flex-col font-sans antialiased selection:bg-indigo-500 selection:text-white pb-12">
-      {/* App Header with navigation switch */}
+      {/* App Header with navigation switch & Help Icon */}
       <Header
         activeScreen={activeScreen}
         onSelectScreen={setActiveScreen}
         bookedCount={bookedSessionsCount}
+        onOpenHelp={() => setIsHelpOpen(true)}
       />
 
       {/* Main Content Area */}
@@ -130,18 +233,47 @@ export default function App() {
         {/* Live Weather for SMU In-Person Sessions */}
         <CityWeatherWidget />
 
-        {activeScreen === 'find' ? (
+        {/* Dynamic Screen View */}
+        {activeScreen === 'find' && (
           <FindTutorScreen
             tutors={tutors}
             onBookSlot={handleBookSlot}
             onCancelSlot={handleCancelSlot}
             onGoToMyWeek={handleGoToMyWeek}
+            onOpenChat={(tutor) => setSelectedTutorForChat(tutor)}
+            onViewProfessorProfile={(_tutor) => {
+              setActiveScreen('professors');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
           />
-        ) : (
+        )}
+
+        {activeScreen === 'professors' && (
+          <ProfessorsScreen
+            tutors={tutors}
+            onOpenChat={(tutor) => setSelectedTutorForChat(tutor)}
+            onGoToBooking={(_tutor) => {
+              setActiveScreen('find');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+          />
+        )}
+
+        {activeScreen === 'schedule' && (
           <MyWeekScreen
             schedule={schedule}
             onGoToFindTutor={handleGoToFindTutor}
             onCancelBooking={handleCancelSlot}
+            onOpenPayment={(item) =>
+              setPaymentModalState({ isOpen: true, item, itemsToPay: [item] })
+            }
+            onPayAllBookings={(unpaidItems) =>
+              setPaymentModalState({
+                isOpen: true,
+                item: unpaidItems[0] || null,
+                itemsToPay: unpaidItems,
+              })
+            }
           />
         )}
       </main>
@@ -153,6 +285,37 @@ export default function App() {
         slot={modalState.slot}
         onClose={() => setModalState({ isOpen: false, tutor: null, slot: null })}
         onGoToMyWeek={handleGoToMyWeek}
+      />
+
+      {/* How To Use Help / Info Dialog */}
+      <HowToUseModal
+        isOpen={isHelpOpen}
+        onClose={() => setIsHelpOpen(false)}
+        onGoToFindTutor={() => {
+          setActiveScreen('find');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
+        onGoToProfessors={() => {
+          setActiveScreen('professors');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
+      />
+
+      {/* Chat Request Dialog */}
+      <ChatRequestModal
+        isOpen={!!selectedTutorForChat}
+        tutor={selectedTutorForChat}
+        onClose={() => setSelectedTutorForChat(null)}
+        onSubmit={handleSendChatRequest}
+      />
+
+      {/* Class Payment Modal */}
+      <PaymentModal
+        isOpen={paymentModalState.isOpen}
+        item={paymentModalState.item}
+        itemsToPay={paymentModalState.itemsToPay}
+        onClose={() => setPaymentModalState({ isOpen: false, item: null })}
+        onConfirmPayment={handleConfirmPayment}
       />
 
       {/* Global Application Footer with Open Data Licence Attribution */}

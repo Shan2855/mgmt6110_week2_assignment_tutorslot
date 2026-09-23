@@ -1,5 +1,7 @@
 export type DayOfWeek = 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday';
 
+export type StudyLevel = 'UG' | 'PG';
+
 export interface TutoringSlot {
   id: string;
   tutorId: string;
@@ -10,18 +12,34 @@ export interface TutoringSlot {
   isBooked: boolean;
   studentName?: string;
   bookedAt?: string;
+  isPaid?: boolean;
+  price?: number;
+}
+
+export interface ProfessorProfile {
+  title: string;
+  department: string;
+  education: string[];
+  background: string;
+  teachingExperience: string;
+  publications: string[];
+  officeLocation: string;
+  email: string;
 }
 
 export interface Tutor {
   id: string;
   name: string;
   subject: string;
+  level: StudyLevel;
+  major: string;
   description: string;
   rating: number; // e.g. 4.9
   reviewCount: number;
   avatarInitials: string;
   avatarColor: string;
   slots: TutoringSlot[];
+  profile: ProfessorProfile;
 }
 
 export interface WeeklyScheduleItem {
@@ -34,7 +52,28 @@ export interface WeeklyScheduleItem {
   location: string;
   tutorName?: string;
   subject?: string;
+  level?: StudyLevel;
+  major?: string;
   slotId?: string;
+  price?: number;
+  isPaid?: boolean;
+  paidAt?: string;
+  paymentMethod?: string;
 }
 
-export type ActiveScreen = 'find' | 'schedule';
+export interface ChatRequest {
+  id: string;
+  tutorId: string;
+  tutorName: string;
+  subject: string;
+  studentName: string;
+  studentEmail: string;
+  queryType: 'booking' | 'subject' | 'general';
+  message: string;
+  preferredContact: 'email' | 'portal_chat';
+  status: 'sent' | 'responded';
+  createdAt: string;
+}
+
+export type ActiveScreen = 'find' | 'schedule' | 'professors';
+

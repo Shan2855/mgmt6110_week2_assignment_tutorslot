@@ -1,8 +1,8 @@
 import { Tutor, WeeklyScheduleItem } from './types';
 
 /**
- * Single source of truth for all invented mock data in TutorSlot.
- * All names, courses, locations, dates, and times are purely fictional.
+ * Single source of truth for all mock data in TutorSlot.
+ * All names, courses, locations, dates, and times are purely fictional academic examples.
  */
 
 export const DAYS_OF_WEEK: Array<'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday'> = [
@@ -26,6 +26,8 @@ export const INITIAL_TUTORS: Tutor[] = [
     id: 'tutor-1',
     name: 'Dr. Aris Thorne',
     subject: 'Microeconomic Theory & Game Design',
+    level: 'UG',
+    major: 'Economics',
     description: 'Specializes in mathematical modeling of competitive decision-making, consumer equilibrium, and oligopoly payoff matrices.',
     rating: 4.9,
     reviewCount: 38,
@@ -60,11 +62,31 @@ export const INITIAL_TUTORS: Tutor[] = [
         isBooked: false,
       },
     ],
+    profile: {
+      title: 'Associate Professor of Economics',
+      department: 'School of Economics',
+      education: [
+        'Ph.D. in Economics, London School of Economics',
+        'M.Sc. in Econometrics & Mathematical Economics, Oxford University',
+        'B.Sc. (Hons) in Quantitative Economics, National University of Singapore',
+      ],
+      background: 'Over 12 years of research across applied game theory, regulatory auction mechanism design, and strategic corporate pricing behavior. Consulted for competition commissions across Southeast Asia.',
+      teachingExperience: 'Taught Undergraduate Intermediate Microeconomics, Game Theory for Decision Makers, and Advanced Industrial Organization at SMU and LSE over 9 academic years. Awarded the Dean’s Teaching Excellence Award in 2024.',
+      publications: [
+        'Thorne, A. & Tan, L. (2024). "Repeated Dynamic Auctions with Asymmetric Risk Tolerances." Journal of Economic Theory, 189, 105-132.',
+        'Thorne, A. (2022). "Collusion Vulnerability in Multi-Unit Spectrum Allocations." International Journal of Industrial Organization, 74, 45-68.',
+        'Lim, C. & Thorne, A. (2020). "Signaling Equilibria in Bilateral Duopolies." Review of Economic Studies, 87(3), 1140-1168.',
+      ],
+      officeLocation: 'School of Economics, Level 5, Room 5012',
+      email: 'aristhorne@smu.edu.sg',
+    },
   },
   {
     id: 'tutor-2',
     name: 'Nadia Chen-Vazquez',
     subject: 'Organic Reaction Pathways & Synthesis',
+    level: 'UG',
+    major: 'Chemical Sciences',
     description: 'Assisting students through carbonyl additions, chiral stereochemistry, and multi-step retro-synthetic laboratory strategies.',
     rating: 4.8,
     reviewCount: 42,
@@ -99,11 +121,29 @@ export const INITIAL_TUTORS: Tutor[] = [
         isBooked: false,
       },
     ],
+    profile: {
+      title: 'Senior Lecturer in Molecular Chemistry',
+      department: 'College of Science & Technology',
+      education: [
+        'Ph.D. in Organic Chemistry, UC Berkeley',
+        'B.S. in Chemical Biology (Summa Cum Laude), Cornell University',
+      ],
+      background: 'Synthetic organic chemist specializing in transition-metal-catalyzed cross-coupling reactions, stereoselective biocatalysis, and green laboratory reagent optimization.',
+      teachingExperience: '8 years instructing foundational and intermediate organic chemistry lecture series, leading high-throughput laboratory practicals, and mentoring honors thesis candidates.',
+      publications: [
+        'Chen-Vazquez, N. et al. (2025). "Mild Nickel-Catalyzed Enantioselective C-C Bond Formations." Journal of the American Chemical Society, 147(4), 2210-2224.',
+        'Chen-Vazquez, N. & Gomez, R. (2023). "Solvent-Free Retro-Synthetic Strategies in Educational Labs." Green Chemistry Letters & Reviews, 16(1), 89-102.',
+      ],
+      officeLocation: 'Science Complex West, Level 3, Lab Suite 314',
+      email: 'nadiachen@smu.edu.sg',
+    },
   },
   {
     id: 'tutor-3',
     name: 'Devon K. Mercer',
     subject: 'Vector Calculus & Differential Systems',
+    level: 'UG',
+    major: 'Applied Mathematics',
     description: 'Patient approach covering Stokes theorem, double integration, vector fields, and linear boundary value problems.',
     rating: 5.0,
     reviewCount: 51,
@@ -129,11 +169,29 @@ export const INITIAL_TUTORS: Tutor[] = [
         isBooked: false,
       },
     ],
+    profile: {
+      title: 'Principal Fellow in Mathematics & Modeling',
+      department: 'Department of Mathematical Sciences',
+      education: [
+        'Ph.D. in Applied Mathematics, University of Cambridge (DAMTP)',
+        'M.Math. (Master of Mathematics, First Class), Cambridge Tripos Part III',
+      ],
+      background: 'Research encompasses computational fluid dynamics, Navier-Stokes approximations, and topological vector field decomposition. Industry consultant on aerodynamic simulation solvers.',
+      teachingExperience: '11 years teaching Multivariable Calculus, Ordinary & Partial Differential Equations, and Real Analysis. Recipient of 3 university-wide Outstanding Educator Commendations.',
+      publications: [
+        'Mercer, D. K. & Wallace, P. (2024). "Vorticity Preservation Algorithms for Complex Boundary Manifolds." Journal of Computational Physics, 492, 112-140.',
+        'Mercer, D. K. (2021). "Iterative Eigen-solvers for High-Dimensional Differential Systems." SIAM Journal on Applied Mathematics, 81(5), 2004-2028.',
+      ],
+      officeLocation: 'Mathematical Institute, Level 4, Office 412',
+      email: 'devonmercer@smu.edu.sg',
+    },
   },
   {
     id: 'tutor-4',
     name: 'Soren Lindqvist',
     subject: 'Data Structures & Algorithmic Complexity',
+    level: 'UG',
+    major: 'Computer Science',
     description: 'Demystifying asymptotic Big-O bounds, graph traversals (BFS/DFS), dynamic programming tables, and heap indexing.',
     rating: 4.9,
     reviewCount: 64,
@@ -168,11 +226,30 @@ export const INITIAL_TUTORS: Tutor[] = [
         isBooked: false,
       },
     ],
+    profile: {
+      title: 'Associate Professor of Computer Science',
+      department: 'School of Computing and Information Systems',
+      education: [
+        'Ph.D. in Computer Science, ETH Zurich',
+        'M.Sc. in Distributed Systems, KTH Royal Institute of Technology',
+      ],
+      background: 'Expertise in high-performance graph processing, probabilistic data structures (Bloom filters, HyperLogLog), and cache-aware algorithm engineering. Former visiting researcher at Google Brain Zurich.',
+      teachingExperience: 'Over 10 years instructing Data Structures & Algorithms, Design of Operating Systems, and Advanced Distributed Storage. Creator of interactive automated algorithm grading harnesses.',
+      publications: [
+        'Lindqvist, S. & Bach, E. (2025). "Lock-Free Subgraph Isomorphism at Scale." IEEE Transactions on Parallel and Distributed Systems, 36(2), 341-356.',
+        'Lindqvist, S. (2023). "Cache-Conscious Priority Queues for Streaming Graph Traversal." ACM Transactions on Algorithms (TALG), 19(3), 1-28.',
+        'Lindqvist, S. & Wu, K. (2021). "Near-Optimal Dynamic Programming for Constrained Shortest Paths." Algorithmica, 83, 1580-1612.',
+      ],
+      officeLocation: 'SCIS Building 1, Level 4, Room 4028',
+      email: 'sorenl@smu.edu.sg',
+    },
   },
   {
     id: 'tutor-5',
     name: 'Helena Rostova',
     subject: 'Critical Writing & Scholarly Arguments',
+    level: 'UG',
+    major: 'Humanities & Literature',
     description: 'Editorial coaching on thesis refinement, structural paragraph transitions, textual counterarguments, and citation precision.',
     rating: 4.8,
     reviewCount: 29,
@@ -198,11 +275,30 @@ export const INITIAL_TUTORS: Tutor[] = [
         isBooked: false,
       },
     ],
+    profile: {
+      title: 'Senior Faculty Fellow in Academic Discourse',
+      department: 'School of Social Sciences & Humanities',
+      education: [
+        'Ph.D. in English Literature & Rhetoric, Columbia University',
+        'M.A. in Comparative Critical Theory, University of Chicago',
+        'B.A. in English (First Class), Yale University',
+      ],
+      background: 'Specialist in 20th-century rhetoric, philosophical argumentation, and interdisciplinary writing pedagogy. Editorial board member for Modern Critical Studies.',
+      teachingExperience: '14 years directing undergraduate university writing seminars, graduate dissertation workshops, and interdisciplinary publishing roundtables.',
+      publications: [
+        'Rostova, H. (2024). "The Architectonics of Modern Scholarly Prose." Critical Inquiry, 50(2), 241-267.',
+        'Rostova, H. & Sterling, M. (2022). "Rhetorical Stances and Counter-Attribution in Academic Peer Review." College Composition and Communication, 73(4), 610-639.',
+      ],
+      officeLocation: 'Humanities Hall, Level 2, Suite 210',
+      email: 'hrostova@smu.edu.sg',
+    },
   },
   {
     id: 'tutor-6',
     name: 'Tariq Al-Sabah',
     subject: 'Corporate Financial Statement Modeling',
+    level: 'PG',
+    major: 'Finance & Accounting',
     description: 'Hands-on breakdown of discounted cash flows (DCF), debt amortization schedules, working capital cycles, and ratios.',
     rating: 4.9,
     reviewCount: 47,
@@ -228,11 +324,30 @@ export const INITIAL_TUTORS: Tutor[] = [
         isBooked: false,
       },
     ],
+    profile: {
+      title: 'Professor of Practice in Corporate Finance',
+      department: 'Lee Kong Chian School of Business',
+      education: [
+        'Ph.D. in Finance, Wharton School of Business (Univ. of Pennsylvania)',
+        'MBA (Finance Concentration), INSEAD',
+        'CFA Charterholder, CFA Institute',
+      ],
+      background: '15 years of industry experience across global investment banking (M&A Advisory) and private equity in London, Dubai, and Singapore prior to entering academia full-time.',
+      teachingExperience: '10 years instructing MBA and Master of Science in Applied Finance students on LBO Modeling, Mergers & Acquisitions valuation, and Credit Portfolio structuring. Named MBA Professor of the Year in 2023.',
+      publications: [
+        'Al-Sabah, T. & Al-Mansoor, F. (2024). "Cross-Border Valuation Distortions in Emerging Market LBOs." Journal of Financial Economics, 151, 103-128.',
+        'Al-Sabah, T. (2022). "Synergy Realization and Debt Covenant Design in High-Leverage Transactions." Journal of Corporate Finance, 72, 102-124.',
+      ],
+      officeLocation: 'LKCSB Building, Level 4, Office 4085',
+      email: 'tariqalsabah@smu.edu.sg',
+    },
   },
   {
     id: 'tutor-7',
     name: 'Kavita Sundaram',
     subject: 'Experimental Psychology & Hypothesis Testing',
+    level: 'PG',
+    major: 'Psychological Science',
     description: 'Guiding undergraduates through ANOVA variance partitions, statistical regression interpretations, and survey validity checks.',
     rating: 4.7,
     reviewCount: 33,
@@ -258,6 +373,24 @@ export const INITIAL_TUTORS: Tutor[] = [
         isBooked: false,
       },
     ],
+    profile: {
+      title: 'Associate Professor of Behavioral Science & Quantitative Methods',
+      department: 'School of Social Sciences',
+      education: [
+        'Ph.D. in Cognitive & Quantitative Psychology, Stanford University',
+        'M.S. in Applied Statistics, Stanford University',
+        'B.A. (First Class Honours) in Psychology, University of Melbourne',
+      ],
+      background: 'Pioneered research into cognitive heuristics, Bayesian decision models in high-stress environments, and robust psychometric instrument design for organizational settings.',
+      teachingExperience: '9 years teaching Postgraduate Multivariate Statistics, Experimental Design & Analysis, and Structural Equation Modeling (SEM) across graduate degree cohorts.',
+      publications: [
+        'Sundaram, K. & Thorne, A. (2025). "Decision Latency and Probability Discounting under Cognitive Load." Psychological Review, 132(1), 180-205.',
+        'Sundaram, K. (2023). "Replicability and Mixed-Effects Modeling in Multi-Site Behavioral Experiments." Journal of Experimental Psychology: General, 152(6), 1640-1662.',
+        'Sundaram, K. & Rao, V. (2021). "Psychometric Construct Invariance in Cross-Cultural Workplace Surveys." Journal of Applied Psychology, 106(8), 1210-1234.',
+      ],
+      officeLocation: 'Social Sciences Building, Level 3, Lab 322',
+      email: 'kavitasundaram@smu.edu.sg',
+    },
   },
 ];
 
