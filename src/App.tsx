@@ -19,15 +19,31 @@ export default function App() {
 
 
   useEffect(() => {
-    const script = document.createElement('script');
-    script.src = 'https://tutorslot-mgmt6110.disqus.com/embed.js';
-    script.setAttribute('data-timestamp', Date.now().toString());
-    script.async = true;
-    document.body.appendChild(script);
+    // Disqus' embed currently fails on Tailwind's OKLCH computed colors.
+    // Give the Disqus mount point legacy RGB colors before loading embed.js.
+    const thread = document.getElementById('disqus_thread');
+    if (thread) {
+      thread.style.setProperty('color', 'rgb(15, 23, 42)', 'important');
+      thread.style.setProperty('background-color', 'rgb(241, 245, 249)', 'important');
+      thread.style.setProperty('border-color', 'rgb(203, 213, 225)', 'important');
+    }
 
-    return () => {
-      script.remove();
+    (window as any).disqus_config = function (this: any) {
+      this.page.url = 'https://mgmt6110week2assignmenttutorslot.vercel.app/';
+      this.page.identifier = 'tutorslot-home';
     };
+
+    const existingScript = document.querySelector(
+      'script[src="https://tutorslot-mgmt6110.disqus.com/embed.js"]'
+    );
+
+    if (!existingScript) {
+      const script = document.createElement('script');
+      script.src = 'https://tutorslot-mgmt6110.disqus.com/embed.js';
+      script.setAttribute('data-timestamp', Date.now().toString());
+      script.async = true;
+      document.body.appendChild(script);
+    }
   }, []);
 
   // Modals state
@@ -333,9 +349,16 @@ export default function App() {
 
 
       {/* Disqus Comments & Feedback */}
-      <section className="max-w-4xl w-full mx-auto px-4 mt-8">
+      <section className="max-w-4xl w-full mx-auto px-4 mt-8" style={{ color: 'rgb(15, 23, 42)' }}>
         <h2 className="text-xl font-semibold mb-4">Comments & Feedback</h2>
-        <div id="disqus_thread"></div>
+        <div
+          id="disqus_thread"
+          style={{
+            color: 'rgb(15, 23, 42)',
+            backgroundColor: 'rgb(241, 245, 249)',
+            borderColor: 'rgb(203, 213, 225)',
+          }}
+        ></div>
       </section>
 
       {/* Global Application Footer with Open Data Licence Attribution */}
