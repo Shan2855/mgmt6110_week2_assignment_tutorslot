@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ActiveScreen, Tutor, TutoringSlot, WeeklyScheduleItem, ChatRequest } from './types';
 import { INITIAL_TUTORS, INITIAL_STUDENT_SCHEDULE } from './data';
 import { Header } from './components/Header';
@@ -16,6 +16,19 @@ export default function App() {
   const [tutors, setTutors] = useState<Tutor[]>(INITIAL_TUTORS);
   const [schedule, setSchedule] = useState<WeeklyScheduleItem[]>(INITIAL_STUDENT_SCHEDULE);
   const [chatRequests, setChatRequests] = useState<ChatRequest[]>([]);
+
+
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://tutorslot-mgmt6110.disqus.com/embed.js';
+    script.setAttribute('data-timestamp', Date.now().toString());
+    script.async = true;
+    document.body.appendChild(script);
+
+    return () => {
+      script.remove();
+    };
+  }, []);
 
   // Modals state
   const [isHelpOpen, setIsHelpOpen] = useState<boolean>(false);
@@ -317,6 +330,13 @@ export default function App() {
         onClose={() => setPaymentModalState({ isOpen: false, item: null })}
         onConfirmPayment={handleConfirmPayment}
       />
+
+
+      {/* Disqus Comments & Feedback */}
+      <section className="max-w-4xl w-full mx-auto px-4 mt-8">
+        <h2 className="text-xl font-semibold mb-4">Comments & Feedback</h2>
+        <div id="disqus_thread"></div>
+      </section>
 
       {/* Global Application Footer with Open Data Licence Attribution */}
       <footer className="max-w-4xl w-full mx-auto px-4 mt-8 pt-4 border-t border-slate-200/60 text-center text-xs text-slate-500 leading-relaxed">
