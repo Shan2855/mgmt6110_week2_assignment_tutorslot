@@ -10,6 +10,7 @@ import { HowToUseModal } from './components/HowToUseModal';
 import { ChatRequestModal } from './components/ChatRequestModal';
 import { PaymentModal } from './components/PaymentModal';
 import { CityWeatherWidget } from './components/CityWeatherWidget';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { RotateCcw } from 'lucide-react';
 
 const STORAGE_KEY_SCHEDULE = 'tutorslot_schedule_v1';
@@ -300,37 +301,39 @@ export default function App() {
         {/* Real-time Weather in City widget */}
         <CityWeatherWidget />
 
-        {/* Screen 1: Find a Tutor & Book Slots */}
-        {activeScreen === 'find' && (
-          <FindTutorScreen
-            tutors={tutors}
-            onBookSlot={handleBookSlot}
-            onCancelSlot={handleCancelSlot}
-            onGoToMyWeek={() => setActiveScreen('schedule')}
-            onOpenChat={handleOpenChat}
-            onViewProfessorProfile={(_tutor) => setActiveScreen('professors')}
-          />
-        )}
+        <ErrorBoundary onResetToHome={() => setActiveScreen('find')}>
+          {/* Screen 1: Find a Tutor & Book Slots */}
+          {activeScreen === 'find' && (
+            <FindTutorScreen
+              tutors={tutors}
+              onBookSlot={handleBookSlot}
+              onCancelSlot={handleCancelSlot}
+              onGoToMyWeek={() => setActiveScreen('schedule')}
+              onOpenChat={handleOpenChat}
+              onViewProfessorProfile={(_tutor) => setActiveScreen('professors')}
+            />
+          )}
 
-        {/* Screen 2: My Week (Schedule & Booked Sessions & Payment) */}
-        {activeScreen === 'schedule' && (
-          <MyWeekScreen
-            schedule={schedule}
-            onGoToFindTutor={() => setActiveScreen('find')}
-            onCancelBooking={handleCancelSlot}
-            onOpenPayment={handleOpenPayment}
-            onPayAllBookings={handlePayAllBookings}
-          />
-        )}
+          {/* Screen 2: My Week (Schedule & Booked Sessions & Payment) */}
+          {activeScreen === 'schedule' && (
+            <MyWeekScreen
+              schedule={schedule}
+              onGoToFindTutor={() => setActiveScreen('find')}
+              onCancelBooking={handleCancelSlot}
+              onOpenPayment={handleOpenPayment}
+              onPayAllBookings={handlePayAllBookings}
+            />
+          )}
 
-        {/* Screen 3: Faculty Profiles & Background Information */}
-        {activeScreen === 'professors' && (
-          <ProfessorsScreen
-            tutors={tutors}
-            onOpenChat={handleOpenChat}
-            onGoToBooking={(_tutor) => setActiveScreen('find')}
-          />
-        )}
+          {/* Screen 3: Faculty Profiles & Background Information */}
+          {activeScreen === 'professors' && (
+            <ProfessorsScreen
+              tutors={tutors}
+              onOpenChat={handleOpenChat}
+              onGoToBooking={(_tutor) => setActiveScreen('find')}
+            />
+          )}
+        </ErrorBoundary>
       </main>
 
       {/* Booking Confirmation Dialog */}

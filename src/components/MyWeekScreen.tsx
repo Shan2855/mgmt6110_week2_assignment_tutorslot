@@ -94,7 +94,7 @@ export const MyWeekScreen: React.FC<MyWeekScreenProps> = ({
                   Tutoring Tuition & Payment Status:
                 </span>
                 <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-indigo-200 text-indigo-900">
-                  {paidItems.length} / {bookedTutoringItems.length} Paid
+                  <span className="notranslate" translate="no">{paidItems.length}</span> / <span className="notranslate" translate="no">{bookedTutoringItems.length}</span> Paid
                 </span>
               </div>
               <p className="text-xs text-indigo-800">

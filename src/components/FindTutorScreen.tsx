@@ -209,7 +209,9 @@ export const FindTutorScreen: React.FC<FindTutorScreenProps> = ({
             </div>
             <div>
               <div className="font-bold text-base text-emerald-950">
-                You have {bookedSlotsCount} confirmed booking{bookedSlotsCount > 1 ? 's' : ''} this week!
+                <span>You have </span>
+                <span className="notranslate font-extrabold" translate="no">{bookedSlotsCount}</span>
+                <span> confirmed booking{bookedSlotsCount > 1 ? 's' : ''} this week!</span>
               </div>
               <div className="text-sm text-emerald-800">
                 Check your weekly schedule to see your reserved appointment times.

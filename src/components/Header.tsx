@@ -95,14 +95,14 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <Calendar className="w-4 h-4" />
               <span>My Week</span>
-              {bookedCount > 0 && (
+              {bookedCount > 0 ? (
                 <span
                   id="header-booked-badge"
                   className="ml-1 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold bg-emerald-500 text-white rounded-full min-w-[20px]"
                 >
-                  {bookedCount}
+                  <span className="notranslate" translate="no">{bookedCount}</span>
                 </span>
-              )}
+              ) : null}
             </button>
           </nav>
         </div>
