@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ActiveScreen, Tutor, TutoringSlot, WeeklyScheduleItem, ChatRequest } from './types';
 import { INITIAL_TUTORS, INITIAL_STUDENT_SCHEDULE } from './data';
 import { Header } from './components/Header';
@@ -10,41 +10,90 @@ import { HowToUseModal } from './components/HowToUseModal';
 import { ChatRequestModal } from './components/ChatRequestModal';
 import { PaymentModal } from './components/PaymentModal';
 import { CityWeatherWidget } from './components/CityWeatherWidget';
+import { RotateCcw } from 'lucide-react';
+
+const STORAGE_KEY_SCHEDULE = 'tutorslot_schedule_v1';
+const STORAGE_KEY_TUTORS = 'tutorslot_tutors_v1';
+const STORAGE_KEY_CHATS = 'tutorslot_chats_v1';
 
 export default function App() {
   const [activeScreen, setActiveScreen] = useState<ActiveScreen>('find');
-  const [tutors, setTutors] = useState<Tutor[]>(INITIAL_TUTORS);
-  const [schedule, setSchedule] = useState<WeeklyScheduleItem[]>(INITIAL_STUDENT_SCHEDULE);
-  const [chatRequests, setChatRequests] = useState<ChatRequest[]>([]);
 
+  // Initialize state with persistence from localStorage
+  const [tutors, setTutors] = useState<Tutor[]>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY_TUTORS);
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch {
+      // Fallback on error
+    }
+    return INITIAL_TUTORS;
+  });
+
+  const [schedule, setSchedule] = useState<WeeklyScheduleItem[]>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY_SCHEDULE);
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch {
+      // Fallback on error
+    }
+    return INITIAL_STUDENT_SCHEDULE;
+  });
+
+  const [chatRequests, setChatRequests] = useState<ChatRequest[]>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY_CHATS);
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch {
+      // Fallback on error
+    }
+    return [];
+  });
+
+  // Save changes to localStorage whenever state updates
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY_TUTORS, JSON.stringify(tutors));
+    } catch {
+      // Ignore storage errors
+    }
+  }, [tutors]);
 
   useEffect(() => {
-    // Disqus' embed currently fails on Tailwind's OKLCH computed colors.
-    // Give the Disqus mount point legacy RGB colors before loading embed.js.
-    const thread = document.getElementById('disqus_thread');
-    if (thread) {
-      thread.style.setProperty('color', 'rgb(15, 23, 42)', 'important');
-      thread.style.setProperty('background-color', 'rgb(241, 245, 249)', 'important');
-      thread.style.setProperty('border-color', 'rgb(203, 213, 225)', 'important');
+    try {
+      localStorage.setItem(STORAGE_KEY_SCHEDULE, JSON.stringify(schedule));
+    } catch {
+      // Ignore storage errors
     }
+  }, [schedule]);
 
-    (window as any).disqus_config = function (this: any) {
-      this.page.url = 'https://mgmt6110week2assignmenttutorslot.vercel.app/';
-      this.page.identifier = 'tutorslot-home';
-    };
-
-    const existingScript = document.querySelector(
-      'script[src="https://tutorslot-mgmt6110.disqus.com/embed.js"]'
-    );
-
-    if (!existingScript) {
-      const script = document.createElement('script');
-      script.src = 'https://tutorslot-mgmt6110.disqus.com/embed.js';
-      script.setAttribute('data-timestamp', Date.now().toString());
-      script.async = true;
-      document.body.appendChild(script);
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY_CHATS, JSON.stringify(chatRequests));
+    } catch {
+      // Ignore storage errors
     }
-  }, []);
+  }, [chatRequests]);
+
+  // Reset demo state back to pristine state
+  const handleResetDemoData = () => {
+    try {
+      localStorage.removeItem(STORAGE_KEY_TUTORS);
+      localStorage.removeItem(STORAGE_KEY_SCHEDULE);
+      localStorage.removeItem(STORAGE_KEY_CHATS);
+    } catch {
+      // Ignore storage errors
+    }
+    setTutors(INITIAL_TUTORS);
+    setSchedule(INITIAL_STUDENT_SCHEDULE);
+    setChatRequests([]);
+  };
 
   // Modals state
   const [isHelpOpen, setIsHelpOpen] = useState<boolean>(false);
@@ -74,14 +123,9 @@ export default function App() {
   // Count total booked tutoring sessions
   const bookedSessionsCount = schedule.filter((item) => item.type === 'tutoring').length;
 
-  /**
-   * Book a tutoring slot:
-   * 1. Updates the tutor slot to isBooked: true
-   * 2. Adds the new confirmed appointment with Level & Major and default rate of S$35 into My Week
-   * 3. Displays the confirmation modal
-   */
+  // Booking a slot handler
   const handleBookSlot = (tutor: Tutor, slot: TutoringSlot) => {
-    // 1. Update tutor slot state
+    // 1. Update the tutor slot to be marked as booked
     setTutors((prevTutors) =>
       prevTutors.map((t) => {
         if (t.id !== tutor.id) return t;
@@ -92,9 +136,10 @@ export default function App() {
               ? {
                   ...s,
                   isBooked: true,
-                  price: 35,
+                  studentName: 'Alex Tan',
+                  bookedAt: new Date().toISOString(),
                   isPaid: false,
-                  bookedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                  price: 35,
                 }
               : s
           ),
@@ -102,13 +147,13 @@ export default function App() {
       })
     );
 
-    // 2. Add to weekly schedule immediately (with Level, Major, price: 35, isPaid: false)
+    // 2. Add this session to the student's weekly schedule (unpaid by default)
     const newScheduleItem: WeeklyScheduleItem = {
       id: `booking-${slot.id}-${Date.now()}`,
       day: slot.day,
       dateStr: slot.dateStr,
       time: slot.time,
-      title: `1-on-1 Tutoring: ${tutor.subject}`,
+      title: `${tutor.subject} Tutoring`,
       type: 'tutoring',
       location: slot.room,
       tutorName: tutor.name,
@@ -120,65 +165,59 @@ export default function App() {
       isPaid: false,
     };
 
-    setSchedule((prevSchedule) => {
-      const filtered = prevSchedule.filter((item) => item.slotId !== slot.id);
-      return [...filtered, newScheduleItem];
-    });
+    setSchedule((prev) => [...prev, newScheduleItem]);
 
-    // 3. Show confirmation feedback
+    // 3. Open confirmation dialog
     setModalState({
       isOpen: true,
       tutor,
-      slot: { ...slot, isBooked: true, price: 35, isPaid: false },
+      slot,
     });
   };
 
-  /**
-   * Cancel a booked tutoring session:
-   * 1. Restores the tutor slot to available
-   * 2. Removes the appointment from My Week schedule
-   * (Paid classes are blocked from cancellation)
-   */
+  // Cancellation handler (allowed only if unpaid)
   const handleCancelSlot = (slotId: string) => {
-    // Check if slot is already paid - safeguard against cancellation
-    const targetScheduleItem = schedule.find((item) => item.slotId === slotId);
-    if (targetScheduleItem?.isPaid) {
-      alert('Paid tutoring sessions cannot be cancelled or refunded.');
+    // Find item to check if paid
+    const targetItem = schedule.find((it) => it.slotId === slotId);
+    if (targetItem && targetItem.isPaid) {
+      alert('This session has been paid for and cannot be cancelled or refunded.');
       return;
     }
 
+    // Free the slot in the tutors list
     setTutors((prevTutors) =>
       prevTutors.map((t) => ({
         ...t,
         slots: t.slots.map((s) =>
-          s.id === slotId ? { ...s, isBooked: false, bookedAt: undefined, isPaid: false } : s
+          s.id === slotId
+            ? {
+                ...s,
+                isBooked: false,
+                studentName: undefined,
+                bookedAt: undefined,
+                isPaid: false,
+              }
+            : s
         ),
       }))
     );
 
-    setSchedule((prevSchedule) => prevSchedule.filter((item) => item.slotId !== slotId));
-
-    if (modalState.slot?.id === slotId) {
-      setModalState({ isOpen: false, tutor: null, slot: null });
-    }
+    // Remove from the student's schedule
+    setSchedule((prev) => prev.filter((item) => item.slotId !== slotId));
   };
 
-  /**
-   * Process payment confirmation for one or multiple classes:
-   * 1. Marks the schedule items as isPaid: true
-   * 2. Locks the tutor slots so they cannot be cancelled
-   */
+  // Payment confirmation handler
   const handleConfirmPayment = (slotIds: string[], paymentMethod: string) => {
-    const paidAtTimestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-    // Update schedule items
+    // Mark as paid in schedule
     setSchedule((prev) =>
       prev.map((item) => {
         if (item.slotId && slotIds.includes(item.slotId)) {
           return {
             ...item,
             isPaid: true,
-            paidAt: paidAtTimestamp,
+            paidAt: timestamp,
             paymentMethod,
           };
         }
@@ -186,41 +225,48 @@ export default function App() {
       })
     );
 
-    // Update tutor slots state
-    setTutors((prev) =>
-      prev.map((tutor) => ({
-        ...tutor,
-        slots: tutor.slots.map((slot) => {
-          if (slotIds.includes(slot.id)) {
+    // Mark as paid in tutors list
+    setTutors((prevTutors) =>
+      prevTutors.map((t) => ({
+        ...t,
+        slots: t.slots.map((s) => {
+          if (slotIds.includes(s.id)) {
             return {
-              ...slot,
+              ...s,
               isPaid: true,
             };
           }
-          return slot;
+          return s;
         }),
       }))
     );
   };
 
-  const handleGoToMyWeek = () => {
-    setModalState((prev) => ({ ...prev, isOpen: false }));
-    setActiveScreen('schedule');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+  // Single item payment trigger
+  const handleOpenPayment = (item: WeeklyScheduleItem) => {
+    setPaymentModalState({
+      isOpen: true,
+      item,
+      itemsToPay: [item],
+    });
   };
 
-  const handleGoToFindTutor = () => {
-    setActiveScreen('find');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+  // Batch payment trigger
+  const handlePayAllBookings = (items: WeeklyScheduleItem[]) => {
+    setPaymentModalState({
+      isOpen: true,
+      item: items[0] || null,
+      itemsToPay: items,
+    });
   };
 
-  const handleGoToProfessors = () => {
-    setActiveScreen('professors');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+  // Open chat request modal
+  const handleOpenChat = (tutor: Tutor) => {
+    setSelectedTutorForChat(tutor);
   };
 
-  // Chat request dispatch
-  const handleSendChatRequest = (data: {
+  // Submit chat request handler
+  const handleSubmitChatRequest = (data: {
     tutorId: string;
     tutorName: string;
     subject: string;
@@ -232,24 +278,16 @@ export default function App() {
   }) => {
     const newChat: ChatRequest = {
       id: `chat-${Date.now()}`,
-      tutorId: data.tutorId,
-      tutorName: data.tutorName,
-      subject: data.subject,
-      studentName: data.studentName,
-      studentEmail: data.studentEmail,
-      queryType: data.queryType,
-      message: data.message,
-      preferredContact: data.preferredContact,
+      ...data,
       status: 'sent',
       createdAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     };
-
     setChatRequests((prev) => [newChat, ...prev]);
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 text-slate-900 flex flex-col font-sans antialiased selection:bg-indigo-500 selection:text-white pb-12">
-      {/* App Header with navigation switch & Help Icon */}
+    <div className="min-h-screen bg-slate-100 flex flex-col font-sans text-slate-800 antialiased">
+      {/* Top Navigation & App Header */}
       <Header
         activeScreen={activeScreen}
         onSelectScreen={setActiveScreen}
@@ -258,51 +296,39 @@ export default function App() {
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-6 space-y-6">
-        {/* Live Weather for SMU In-Person Sessions */}
+      <main className="flex-1 max-w-4xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+        {/* Real-time Weather in City widget */}
         <CityWeatherWidget />
 
-        {/* Dynamic Screen View */}
+        {/* Screen 1: Find a Tutor & Book Slots */}
         {activeScreen === 'find' && (
           <FindTutorScreen
             tutors={tutors}
             onBookSlot={handleBookSlot}
             onCancelSlot={handleCancelSlot}
-            onGoToMyWeek={handleGoToMyWeek}
-            onOpenChat={(tutor) => setSelectedTutorForChat(tutor)}
-            onViewProfessorProfile={(_tutor) => {
-              setActiveScreen('professors');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
+            onGoToMyWeek={() => setActiveScreen('schedule')}
+            onOpenChat={handleOpenChat}
+            onViewProfessorProfile={(_tutor) => setActiveScreen('professors')}
           />
         )}
 
-        {activeScreen === 'professors' && (
-          <ProfessorsScreen
-            tutors={tutors}
-            onOpenChat={(tutor) => setSelectedTutorForChat(tutor)}
-            onGoToBooking={(_tutor) => {
-              setActiveScreen('find');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-          />
-        )}
-
+        {/* Screen 2: My Week (Schedule & Booked Sessions & Payment) */}
         {activeScreen === 'schedule' && (
           <MyWeekScreen
             schedule={schedule}
-            onGoToFindTutor={handleGoToFindTutor}
+            onGoToFindTutor={() => setActiveScreen('find')}
             onCancelBooking={handleCancelSlot}
-            onOpenPayment={(item) =>
-              setPaymentModalState({ isOpen: true, item, itemsToPay: [item] })
-            }
-            onPayAllBookings={(unpaidItems) =>
-              setPaymentModalState({
-                isOpen: true,
-                item: unpaidItems[0] || null,
-                itemsToPay: unpaidItems,
-              })
-            }
+            onOpenPayment={handleOpenPayment}
+            onPayAllBookings={handlePayAllBookings}
+          />
+        )}
+
+        {/* Screen 3: Faculty Profiles & Background Information */}
+        {activeScreen === 'professors' && (
+          <ProfessorsScreen
+            tutors={tutors}
+            onOpenChat={handleOpenChat}
+            onGoToBooking={(_tutor) => setActiveScreen('find')}
           />
         )}
       </main>
@@ -310,62 +336,75 @@ export default function App() {
       {/* Booking Confirmation Dialog */}
       <BookingConfirmationModal
         isOpen={modalState.isOpen}
-        tutor={modalState.tutor}
         slot={modalState.slot}
+        tutor={modalState.tutor}
         onClose={() => setModalState({ isOpen: false, tutor: null, slot: null })}
-        onGoToMyWeek={handleGoToMyWeek}
+        onGoToMyWeek={() => {
+          setModalState({ isOpen: false, tutor: null, slot: null });
+          setActiveScreen('schedule');
+        }}
       />
 
-      {/* How To Use Help / Info Dialog */}
+      {/* How to Use / Step-by-Step Guide Modal */}
       <HowToUseModal
         isOpen={isHelpOpen}
         onClose={() => setIsHelpOpen(false)}
         onGoToFindTutor={() => {
+          setIsHelpOpen(false);
           setActiveScreen('find');
-          window.scrollTo({ top: 0, behavior: 'smooth' });
         }}
         onGoToProfessors={() => {
+          setIsHelpOpen(false);
           setActiveScreen('professors');
-          window.scrollTo({ top: 0, behavior: 'smooth' });
         }}
       />
 
-      {/* Chat Request Dialog */}
+      {/* Chat / Query Request Modal */}
       <ChatRequestModal
         isOpen={!!selectedTutorForChat}
         tutor={selectedTutorForChat}
         onClose={() => setSelectedTutorForChat(null)}
-        onSubmit={handleSendChatRequest}
+        onSubmit={handleSubmitChatRequest}
       />
 
-      {/* Class Payment Modal */}
+      {/* Payment Gateway Modal with Non-Cancellation Rules */}
       <PaymentModal
         isOpen={paymentModalState.isOpen}
         item={paymentModalState.item}
         itemsToPay={paymentModalState.itemsToPay}
-        onClose={() => setPaymentModalState({ isOpen: false, item: null })}
+        onClose={() => setPaymentModalState({ isOpen: false, item: null, itemsToPay: undefined })}
         onConfirmPayment={handleConfirmPayment}
       />
 
+      {/* Simple Academic Footer with Reset Demo Data Control */}
+      <footer className="mt-auto border-t border-slate-200 bg-white py-6 text-center text-xs text-slate-500">
+        <div className="max-w-4xl mx-auto px-4 space-y-2">
+          <p className="font-semibold text-slate-600">
+            TutorSlot — Student Tutoring Appointment & Academic Schedule Planner
+          </p>
+          <p>
+            Current Term: Academic Year 2026/2027 • Week 2 • Faculty Office Hours & Peer Tutoring Center
+          </p>
+          {chatRequests.length > 0 && (
+            <p className="text-emerald-700 font-medium pt-0.5">
+              ✓ {chatRequests.length} active consultation query sent to faculty.
+            </p>
+          )}
 
-      {/* Disqus Comments & Feedback */}
-      <section className="max-w-4xl w-full mx-auto px-4 mt-8" style={{ color: 'rgb(15, 23, 42)' }}>
-        <h2 className="text-xl font-semibold mb-4">Comments & Feedback</h2>
-        <div
-          id="disqus_thread"
-          style={{
-            color: 'rgb(15, 23, 42)',
-            backgroundColor: 'rgb(241, 245, 249)',
-            borderColor: 'rgb(203, 213, 225)',
-          }}
-        ></div>
-      </section>
-
-      {/* Global Application Footer with Open Data Licence Attribution */}
-      <footer className="max-w-4xl w-full mx-auto px-4 mt-8 pt-4 border-t border-slate-200/60 text-center text-xs text-slate-500 leading-relaxed">
-        <p>
-          Contains information from the National Environment Agency, Singapore, which is made available under the terms of the Singapore Open Data Licence version 1.0.
-        </p>
+          {/* Minimal Reset Demo Data Control */}
+          <div className="pt-2 flex items-center justify-center">
+            <button
+              type="button"
+              id="reset-demo-data-btn"
+              onClick={handleResetDemoData}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold text-slate-500 hover:text-rose-700 bg-slate-50 hover:bg-rose-50 border border-slate-200 hover:border-rose-200 rounded-lg transition-colors cursor-pointer"
+              title="Clears all local bookings and restores the prototype to its default state"
+            >
+              <RotateCcw className="w-3 h-3 text-slate-400 group-hover:text-rose-500" />
+              <span>Reset Demo Data</span>
+            </button>
+          </div>
+        </div>
       </footer>
     </div>
   );
