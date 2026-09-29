@@ -9,9 +9,9 @@ declare global {
   }
 }
 
-const DISQUS_SHORTNAME = 'mgmt6110week2assignmenttutorslot';
-const PAGE_URL = 'https://mgmt6110week2assignmenttutorslot.vercel.app';
-const PAGE_IDENTIFIER = 'home';
+const DISQUS_SHORTNAME = 'tutorslot-mgmt6110';
+const PAGE_URL = 'https://mgmt6110week2assignmenttutorslot.vercel.app/';
+const PAGE_IDENTIFIER = 'tutorslot-home';
 
 export const DisqusSection: React.FC = () => {
   useEffect(() => {
