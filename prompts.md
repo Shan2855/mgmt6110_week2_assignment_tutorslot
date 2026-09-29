@@ -149,3 +149,116 @@ At that point, I stopped relying on the agent’s completion message alone. I ma
 
 
 The live /api/health response confirmed status: "ok", providerAnswered: true, and upstreamStatus: 200; /api/weather returned the live City forecast.
+
+
+Problem Set 4 — Adversarial Collaboration and Revision
+Prompt 8 — Skeptical Review of HJ Finding 1: Booking Persistence
+Finding being answered: HJ reported that confirmed and paid bookings disappeared after browser refresh. HJ rated this Severity 4 under H1 — Visibility of System Status.
+Prompt sent:
+ROLE: You are a sceptical senior developer and usability reviewer working in my existing project. Before you write any code, your job is to argue against the repair I propose.
+CONTEXT:
+- Live address: https://mgmt6110week2assignmenttutorslot.vercel.app/
+- TutorSlot is for SMU students and helps them find, review, and book available 1-on-1 tutoring sessions.
+- Finding: A reviewer booked sessions, saw them as confirmed, paid for a session, and then refreshed. The bookings and payment state disappeared.
+- Heuristic: 1 — Visibility of System Status.
+- Screen or system: System.
+- Severity: 4 — the app reports a booking/payment as confirmed but does not preserve that state after refresh.
+- Proposed repair: persist the minimum booking/payment state needed so that confirmed bookings survive browser refresh and revisit.
+GOAL: Argue against my repair. Tell me:
+1. Does it solve the problem the finding describes?
+2. Does it belong to the screen or system?
+3. Name one heuristic this repair could break.
+4. Propose the smallest alternative.
+5. Tell me exactly how to test it.
+OUTPUT: Arguments first, then stop. Write no code until I reply.
+GUARDRAILS: Change nothing else. Do not remove Disqus, Microsoft Clarity, the privacy notice, weather functionality, or /api/health.
+What came back:
+The agent argued that persistence should not be added blindly. It said that localStorage could create stale or confusing demo state, especially on shared browsers, and could reduce H3 — User Control and Freedom if the user had no way to clear the saved state.
+It proposed two alternatives:
+- Approach A: localStorage persistence plus a clear one-click Reset Demo Data control.
+- Approach B: make the prototype explicitly session-only and remove the misleading permanence implied by “confirmed” and “paid”.
+It also proposed a live test: create paid and unpaid bookings, hard-refresh, and verify that booking/payment states and slot locks survive.
+My decision:
+I chose Approach A because the peer evidence showed that users reasonably interpreted “confirmed” and “paid” as persistent states. I instructed the agent to persist only the minimum booking/payment state and add a clearly labelled Reset Demo Data control.
+Implementation result:
+The agent persisted tutors, schedule and chat-request state using localStorage and added Reset Demo Data.
+Commit:
+7f0b950 — feat(persistence): add localStorage support for state
+How I checked it:
+I booked two sessions, paid for one, refreshed the page, and verified that both bookings remained and that the paid/unpaid states were preserved. I repeated the test on the live Vercel deployment.
+Prompt 9 — Skeptical Review of HJ Finding 2: Translation-Triggered White Screen
+Finding being answered: HJ reported that with browser translation enabled, navigating from My Week back to Find a Tutor could produce a blank white screen with no recovery path. HJ rated this Severity 3 under H9 — Help Users Recognize, Diagnose, and Recover from Errors.
+Prompt sent:
+ROLE: You are a sceptical senior developer and usability reviewer working in my existing project. Before you write any code, your job is to argue against the repair I propose.
+CONTEXT:
+- Live address: https://mgmt6110week2assignmenttutorslot.vercel.app
+- Who the product is for, and what it does for them: TutorSlot is for SMU students and helps them find, review, and book available 1-on-1 tutoring sessions.
+- The finding, in its six lines:
+WHERE: TutorSlot, when navigating from My Week back to Find a Tutor while browser translation is active.
+WHAT I DID, WHAT I SAW: A reviewer enabled Safari page translation, booked a session, opened My Week, and navigated back to Find a Tutor. The entire app became a white screen and showed no recovery message. With translation off, the same steps worked normally.
+HEURISTIC: 9 — Help Users Recognize, Diagnose, and Recover from Errors.
+SCREEN OR SYSTEM: Both. The crash is a system problem, while the absence of a recovery message is a screen problem.
+SEVERITY: 3 — Major usability problem because the app becomes unusable under browser translation, with no in-app recovery path.
+REPAIR: The app should avoid crashing when browser translation modifies the page, and if rendering still fails, show an error state with a route back to My Week or Find a Tutor.
+- The evidence behind it: 1 of 3 groupmates raised it and reproduced it with translation enabled.
+- The repair I propose: Add the smallest robust error-boundary/recovery behavior needed so a render failure does not leave a blank screen, and avoid translation-sensitive DOM assumptions if they are present.
+GOAL: Argue against my repair.
+1. Does it solve the problem the finding describes, or a different problem?
+2. Does the problem belong to the screen or to the system, and does my repair sit in the right half?
+3. Name one heuristic this repair could break while it serves the one above, and how.
+4. Propose the smallest alternative that still addresses the reviewer’s observed failure.
+5. Tell me exactly what to do on the live address to check that the repair worked.
+OUTPUT: Your arguments first, as a numbered list. Then stop. Write no code until I reply with the repair I have chosen.
+GUARDRAILS: Change nothing else. Do not remove Disqus, Clarity, the privacy notice, or break /api/health.
+What came back:
+The agent argued that an Error Boundary alone would only improve the aftermath of the failure, not remove the underlying translation/React DOM collision.
+It classified the root failure as system-level and the recovery UI as screen-level.
+It also warned that a recovery button could create an H3 — User Control and Freedom problem if the translated page immediately crashed again.
+Its proposed smallest repair had two layers:
+1. Protect critical dynamic/interpolated text in the affected booking → My Week → Find a Tutor flow from translation-sensitive DOM replacement.
+2. Add a lightweight Error Boundary so that an unexpected rendering failure produces a recovery screen instead of a blank page.
+My decision:
+I accepted the dual-layer repair but explicitly limited it to the critical navigation/dynamic text rather than disabling browser translation across the entire product.
+Implementation result:
+The agent added targeted translate="no" / notranslate protection to critical dynamic counters and added an Error Boundary around the main application views.
+Commit:
+5a0c4c8 — feat: add ErrorBoundary and prevent translation bugs
+How I checked it:
+I enabled Chrome page translation and translated TutorSlot into Chinese. I booked and paid for a class and moved through the relevant screens.
+A rendering error could still occur, so the root issue was not fully eliminated. However, instead of a blank white page, TutorSlot displayed a recovery screen with:
+- Return to Find a Tutor
+- Reload Page
+Returning to Find a Tutor worked and the booking remained.
+I therefore recorded this as a partial repair, not a full fix.
+Prompt 10 — Diagnose and Restore Disqus / Privacy Regression
+Why this was needed:
+While checking JY’s analytics/privacy observation and preparing the required Disqus replies, I found that the Disqus discussion had disappeared from the live revision. The page ended at the TutorSlot footer.
+Prompt sent:
+URGENT BUG — DO NOT CHANGE ANYTHING ELSE.
+On the current live TutorSlot deployment, the Disqus comments section that previously appeared below the footer is now completely missing. The page currently ends after the TutorSlot footer and Reset Demo Data button.
+Inspect the current code and determine exactly why the existing Disqus section is no longer rendering. Restore the same existing Disqus integration/configuration that this project previously used. Do not create a new Disqus site, shortname, thread, or configuration, and do not delete or replace existing comments.
+Preserve all current functionality, especially:
+- booking/payment localStorage persistence
+- Reset Demo Data
+- translation protection
+- Error Boundary
+- Microsoft Clarity
+- privacy notice
+- weather functionality
+- /api/health
+First tell me what caused Disqus to disappear and what minimal change you propose. Do not edit any files or write code until I approve.
+What came back and what happened next:
+The agent first correctly identified that the Disqus container and loader had been omitted, but it then proposed the wrong forum shortname.
+I deployed that change and the live site still showed a blank Disqus area.
+I then challenged that result and asked the agent to verify the exact old working configuration instead of assuming the new one was correct.
+It then identified the existing values as:
+- forum shortname: tutorslot-mgmt6110
+- identifier: tutorslot-home
+- canonical URL: https://mgmt6110week2assignmenttutorslot.vercel.app/
+Even after that configuration correction, the thread remained blank.
+I then compared the current repository with the last working Disqus version and restored the legacy RGB mount-point styling and loader behaviour that the earlier working version used.
+Final restoration commit:
+14e4ce4 — fix: restore working Disqus embed styling and loader
+How I checked it:
+I opened the deployed live page and verified that the original Disqus discussion returned with the existing eight comments.
+
