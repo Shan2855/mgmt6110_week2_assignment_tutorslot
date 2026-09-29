@@ -15,12 +15,25 @@ const PAGE_IDENTIFIER = 'tutorslot-home';
 
 export const DisqusSection: React.FC = () => {
   useEffect(() => {
+    const thread = document.getElementById('disqus_thread');
+
+    // Preserve the legacy RGB styling that the last working Disqus version used.
+    // Disqus previously failed when the mount point inherited Tailwind OKLCH colors.
+    if (thread) {
+      thread.style.setProperty('color', 'rgb(15, 23, 42)', 'important');
+      thread.style.setProperty('background-color', 'rgb(241, 245, 249)', 'important');
+      thread.style.setProperty('border-color', 'rgb(203, 213, 225)', 'important');
+    }
+
     window.disqus_config = function () {
       this.page.url = PAGE_URL;
       this.page.identifier = PAGE_IDENTIFIER;
     };
 
-    const existingScript = document.getElementById('disqus-script');
+    const existingScript = document.querySelector(
+      `script[src="https://${DISQUS_SHORTNAME}.disqus.com/embed.js"]`
+    ) as HTMLScriptElement | null;
+
     if (existingScript) {
       if (window.DISQUS) {
         window.DISQUS.reset({
@@ -37,13 +50,17 @@ export const DisqusSection: React.FC = () => {
     const script = document.createElement('script');
     script.id = 'disqus-script';
     script.src = `https://${DISQUS_SHORTNAME}.disqus.com/embed.js`;
-    script.setAttribute('data-timestamp', String(+new Date()));
+    script.setAttribute('data-timestamp', Date.now().toString());
     script.async = true;
-    (document.head || document.body).appendChild(script);
+    document.body.appendChild(script);
   }, []);
 
   return (
-    <section id="disqus-feedback-section" className="border-t border-slate-200 bg-slate-50/70 pt-8 pb-4">
+    <section
+      id="disqus-feedback-section"
+      className="border-t border-slate-200 bg-slate-50/70 pt-8 pb-4"
+      style={{ color: 'rgb(15, 23, 42)' }}
+    >
       <div className="max-w-4xl mx-auto px-4 space-y-4">
         <div>
           <h3 className="text-lg font-bold text-slate-900 tracking-tight">
@@ -54,7 +71,15 @@ export const DisqusSection: React.FC = () => {
           </p>
         </div>
 
-        <div id="disqus_thread" className="min-h-[180px] bg-white border border-slate-200 rounded-xl p-4 sm:p-6 shadow-xs" />
+        <div
+          id="disqus_thread"
+          className="min-h-[180px] rounded-xl p-4 sm:p-6"
+          style={{
+            color: 'rgb(15, 23, 42)',
+            backgroundColor: 'rgb(241, 245, 249)',
+            borderColor: 'rgb(203, 213, 225)',
+          }}
+        />
 
         <noscript>
           Please enable JavaScript to view the{' '}
