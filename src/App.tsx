@@ -11,6 +11,7 @@ import { ChatRequestModal } from './components/ChatRequestModal';
 import { PaymentModal } from './components/PaymentModal';
 import { CityWeatherWidget } from './components/CityWeatherWidget';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { DisqusSection } from './components/DisqusSection';
 import { RotateCcw } from 'lucide-react';
 
 const STORAGE_KEY_SCHEDULE = 'tutorslot_schedule_v1';
@@ -409,6 +410,9 @@ export default function App() {
           </div>
         </div>
       </footer>
+
+      {/* Community Comments Section via Disqus & Privacy Notice */}
+      <DisqusSection />
     </div>
   );
 }
